@@ -19,9 +19,9 @@ type ToDoMessageRepository interface {
 	UpdateToDoMessageByMessageID(messageID, userID uint, toDoMessage models.ToDoMessage) (models.ToDoMessage, error)
 }
 
-func (todoMessageArray *ToDoMessageArray) CreateToDoMessageByListID(listID, userID uint, toDoMessage models.ToDoMessage) (models.ToDoMessage, error) {
-	todoMessageArray.mutex.Lock()
-	defer todoMessageArray.mutex.Unlock()
+func (toDoMessageArray *ToDoMessageArray) CreateToDoMessageByListID(listID, userID uint, toDoMessage models.ToDoMessage) (models.ToDoMessage, error) {
+	toDoMessageArray.mutex.Lock()
+	defer toDoMessageArray.mutex.Unlock()
 
 	toDoListArray := ToDoListArray{}
 	userArray := UserArray{}
@@ -42,12 +42,68 @@ func (todoMessageArray *ToDoMessageArray) CreateToDoMessageByListID(listID, user
 		}
 	}
 
-	toDoMessage.MessageID = uint(todoMessageArray.toDoMessages[len(todoMessageArray.toDoMessages)-1].MessageID) + 1
+	toDoMessage.MessageID = uint(toDoMessageArray.toDoMessages[len(toDoMessageArray.toDoMessages)-1].MessageID) + 1
 	toDoMessage.ListID = listID
 	toDoMessage.IsDone = false
 	toDoMessage.CreatedAt = time.Now()
 
-	todoMessageArray.toDoMessages = append(todoMessageArray.toDoMessages, toDoMessage)
+	toDoMessageArray.toDoMessages = append(toDoMessageArray.toDoMessages, toDoMessage)
 
 	return toDoMessage, nil
+}
+
+func (toDoMessageArray *ToDoMessageArray) DeleteToDoMessageByMessageID(messageID, userID uint) error {
+	toDoMessageArray.mutex.Lock()
+	defer toDoMessageArray.mutex.Unlock()
+
+	toDoListArray := ToDoListArray{}
+	userArray := UserArray{}
+
+	for i, toDoMessage := range toDoMessageArray.toDoMessages {
+		for _, toDoList := range toDoListArray.toDoLists {
+			for _, user := range userArray.users {
+				if toDoMessage.MessageID == messageID {
+					if toDoList.ListID == toDoMessage.ListID {
+						if user.UserID == userID {
+							if user.UserType == "admin" || user.UserID == toDoMessage.UserID {
+								toDoMessageArray.toDoMessages[i].DeletedAt = time.Now()
+
+								doneCount := 0
+								deleteCount := 0
+
+								for _, toDoMessage := range toDoMessageArray.toDoMessages {
+									if toDoMessage.IsDone && !toDoMessage.DeletedAt.IsZero() {
+										doneCount++
+									}
+								}
+
+								for _, toDoMessage := range toDoMessageArray.toDoMessages {
+									if toDoMessage.DeletedAt.IsZero() {
+										deleteCount++
+									}
+								}
+
+								toDoListArray.toDoLists = append(toDoListArray.toDoLists, models.ToDoList{
+									CompletionPercent: uint(doneCount / (len(toDoMessageArray.toDoMessages) - deleteCount) * 100),
+								})
+
+								return nil
+
+							} else {
+								return errors.New("you are not authorized to delete this message")
+							}
+						} else {
+							return errors.New("user not found")
+						}
+					} else {
+						return errors.New("to-do list not found")
+					}
+				} else {
+					return errors.New("message not found")
+				}
+			}
+		}
+	}
+
+	return nil
 }
