@@ -107,3 +107,61 @@ func (toDoMessageArray *ToDoMessageArray) DeleteToDoMessageByMessageID(messageID
 
 	return nil
 }
+
+func (toDoMessageArray *ToDoMessageArray) UpdateToDoMessageByMessageID(messageID, userID uint, toDoMessage models.ToDoMessage) (models.ToDoMessage, error) {
+	toDoMessageArray.mutex.Lock()
+	defer toDoMessageArray.mutex.Unlock()
+
+	toDoListArray := ToDoListArray{}
+	userArray := UserArray{}
+
+	for i, toDoMessage := range toDoMessageArray.toDoMessages {
+		for _, toDoList := range toDoListArray.toDoLists {
+			for _, user := range userArray.users {
+				if toDoMessage.MessageID == messageID {
+					if toDoList.ListID == toDoMessage.ListID {
+						if user.UserID == userID {
+							if user.UserType == "admin" || user.UserID == toDoMessage.UserID {
+								toDoMessageArray.toDoMessages[i].Content = toDoMessage.Content
+								toDoMessageArray.toDoMessages[i].IsDone = toDoMessage.IsDone
+								toDoMessageArray.toDoMessages[i].UpdatedAt = time.Now()
+
+								doneCount := 0
+								deleteCount := 0
+
+								for _, toDoMessage := range toDoMessageArray.toDoMessages {
+									if toDoMessage.IsDone && !toDoMessage.DeletedAt.IsZero() {
+										doneCount++
+									}
+								}
+
+								for _, toDoMessage := range toDoMessageArray.toDoMessages {
+									if toDoMessage.DeletedAt.IsZero() {
+										deleteCount++
+									}
+								}
+
+								toDoListArray.toDoLists = append(toDoListArray.toDoLists, models.ToDoList{
+									CompletionPercent: uint(doneCount / (len(toDoMessageArray.toDoMessages) - deleteCount) * 100),
+								})
+
+								return toDoMessageArray.toDoMessages[i], nil
+
+							} else {
+								return models.ToDoMessage{}, errors.New("you are not authorized to update this message")
+							}
+						} else {
+							return models.ToDoMessage{}, errors.New("user not found")
+						}
+					} else {
+						return models.ToDoMessage{}, errors.New("to-do list not found")
+					}
+				} else {
+					return models.ToDoMessage{}, errors.New("message not found")
+				}
+			}
+		}
+	}
+
+	return models.ToDoMessage{}, nil
+}
