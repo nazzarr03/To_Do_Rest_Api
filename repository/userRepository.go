@@ -11,6 +11,10 @@ type UserArray struct {
 	users []models.User
 }
 
+type UserRepository interface {
+	Login(user models.User) (string, error)
+}
+
 func AddUser() {
 	userArray := UserArray{}
 
