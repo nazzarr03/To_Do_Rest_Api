@@ -13,6 +13,7 @@ type DefaultToDoMessageService struct {
 type ToDoMessageService interface {
 	GetToDoMessagesByListID(listID uint) ([]models.ToDoMessage, error)
 	CreateToDoMessageByListID(listID, userID uint, toDoMessage models.ToDoMessage) (*dto.ToDoMessageDto, error)
+	DeleteToDoMessageByMessageID(messageID, listID, userID uint) error
 }
 
 func (toDoMessageService *DefaultToDoMessageService) GetToDoMessagesByListID(listID uint) ([]models.ToDoMessage, error) {
@@ -41,4 +42,13 @@ func (toDoMessageService *DefaultToDoMessageService) CreateToDoMessageByListID(l
 	}
 
 	return &toDoMessageDto, nil
+}
+
+func (toDoMessageService *DefaultToDoMessageService) DeleteToDoMessageByMessageID(messageID, listID, userID uint) error {
+	err := toDoMessageService.Repo.DeleteToDoMessageByMessageID(messageID, listID, userID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

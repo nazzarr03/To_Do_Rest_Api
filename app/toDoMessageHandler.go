@@ -84,3 +84,42 @@ func (toDoMessageHandler *ToDoMessageHandler) CreateToDoMessageByListID(ctx *gin
 		"data":    toDoMessageDto,
 	})
 }
+
+func (toDoMessageHandler *ToDoMessageHandler) DeleteToDoMessageByMessageID(ctx *gin.Context) {
+	userID := helper.GetUserID(ctx)
+
+	messageIDStr := ctx.Param("messageID")
+	messageID64, err := strconv.ParseUint(messageIDStr, 10, 64)
+	if err != nil {
+		ctx.Abort()
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	messageID := uint(messageID64)
+
+	listIDStr := ctx.Param("listID")
+	listID64, err := strconv.ParseUint(listIDStr, 10, 64)
+	if err != nil {
+		ctx.Abort()
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	listID := uint(listID64)
+
+	err = toDoMessageHandler.Service.DeleteToDoMessageByMessageID(messageID, listID, userID.(uint))
+	if err != nil {
+		ctx.Abort()
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "To-Do message deleted successfully",
+	})
+}

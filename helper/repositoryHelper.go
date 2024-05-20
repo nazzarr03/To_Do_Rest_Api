@@ -35,6 +35,15 @@ func FindUserByID(userID uint) (*models.User, error) {
 	return nil, errors.New("user not found")
 }
 
+func FindMessageByID(messageID uint) (*models.ToDoMessage, error) {
+	for i, message := range config.ToDoMessages {
+		if message.MessageID == messageID {
+			return &config.ToDoMessages[i], nil
+		}
+	}
+	return nil, errors.New("to-do message not found")
+}
+
 func IsAuthorized(user models.User, list models.ToDoList) error {
 	if user.UserType != "admin" && user.UserID != list.UserID {
 		return errors.New("you are not authorized to delete this to-do list")
