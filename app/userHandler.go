@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/nazzarr03/To-Do-Rest-Api/helper"
 	"github.com/nazzarr03/To-Do-Rest-Api/models"
 	"github.com/nazzarr03/To-Do-Rest-Api/services"
 )
@@ -15,20 +16,12 @@ type UserHandler struct {
 func (userHandler *UserHandler) Login(ctx *gin.Context) {
 	var user models.User
 	if err := ctx.ShouldBindJSON(&user); err != nil {
-		ctx.Abort()
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": err.Error(),
-		})
-		return
+		helper.HandleError(ctx, err)
 	}
 
 	token, err := userHandler.Service.Login(user.Username, user.Password)
 	if err != nil {
-		ctx.Abort()
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": err.Error(),
-		})
-		return
+		helper.HandleError(ctx, err)
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{

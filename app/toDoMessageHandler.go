@@ -2,7 +2,6 @@ package app
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/nazzarr03/To-Do-Rest-Api/helper"
@@ -15,24 +14,14 @@ type ToDoMessageHandler struct {
 }
 
 func (toDoMessageHandler *ToDoMessageHandler) GetToDoMessagesByListID(ctx *gin.Context) {
-	listIDStr := ctx.Param("listID")
-	listID64, err := strconv.ParseUint(listIDStr, 10, 64)
+	listID, err := helper.ParseUintParam(ctx, "listID")
 	if err != nil {
-		ctx.Abort()
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": err.Error(),
-		})
-		return
+		helper.HandleError(ctx, err)
 	}
-	listID := uint(listID64)
 
 	toDoMessages, err := toDoMessageHandler.Service.GetToDoMessagesByListID(listID)
 	if err != nil {
-		ctx.Abort()
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": err.Error(),
-		})
-		return
+		helper.HandleError(ctx, err)
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
@@ -43,40 +32,19 @@ func (toDoMessageHandler *ToDoMessageHandler) GetToDoMessagesByListID(ctx *gin.C
 func (toDoMessageHandler *ToDoMessageHandler) CreateToDoMessageByListID(ctx *gin.Context) {
 	userID := helper.GetUserID(ctx)
 
-	listIDStr := ctx.Param("listID")
-	listID64, err := strconv.ParseUint(listIDStr, 10, 64)
+	listID, err := helper.ParseUintParam(ctx, "listID")
 	if err != nil {
-		ctx.Abort()
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": err.Error(),
-		})
-		return
-	}
-	listID := uint(listID64)
-
-	if err != nil {
-		ctx.Abort()
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": err.Error(),
-		})
+		helper.HandleError(ctx, err)
 	}
 
 	var toDoMessage models.ToDoMessage
 	if err := ctx.ShouldBindJSON(&toDoMessage); err != nil {
-		ctx.Abort()
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": err.Error(),
-		})
-		return
+		helper.HandleError(ctx, err)
 	}
 
 	toDoMessageDto, err := toDoMessageHandler.Service.CreateToDoMessageByListID(listID, userID.(uint), toDoMessage)
 	if err != nil {
-		ctx.Abort()
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": err.Error(),
-		})
-		return
+		helper.HandleError(ctx, err)
 	}
 
 	ctx.JSON(http.StatusCreated, gin.H{
@@ -88,35 +56,19 @@ func (toDoMessageHandler *ToDoMessageHandler) CreateToDoMessageByListID(ctx *gin
 func (toDoMessageHandler *ToDoMessageHandler) DeleteToDoMessageByMessageID(ctx *gin.Context) {
 	userID := helper.GetUserID(ctx)
 
-	messageIDStr := ctx.Param("messageID")
-	messageID64, err := strconv.ParseUint(messageIDStr, 10, 64)
+	messageID, err := helper.ParseUintParam(ctx, "messageID")
 	if err != nil {
-		ctx.Abort()
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": err.Error(),
-		})
-		return
+		helper.HandleError(ctx, err)
 	}
-	messageID := uint(messageID64)
 
-	listIDStr := ctx.Param("listID")
-	listID64, err := strconv.ParseUint(listIDStr, 10, 64)
+	listID, err := helper.ParseUintParam(ctx, "listID")
 	if err != nil {
-		ctx.Abort()
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": err.Error(),
-		})
-		return
+		helper.HandleError(ctx, err)
 	}
-	listID := uint(listID64)
 
 	err = toDoMessageHandler.Service.DeleteToDoMessageByMessageID(messageID, listID, userID.(uint))
 	if err != nil {
-		ctx.Abort()
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": err.Error(),
-		})
-		return
+		helper.HandleError(ctx, err)
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
@@ -129,41 +81,22 @@ func (toDoMessageHandler *ToDoMessageHandler) UpdateToDoMessageByMessageID(ctx *
 
 	var toDoMessage models.ToDoMessage
 	if err := ctx.ShouldBindJSON(&toDoMessage); err != nil {
-		ctx.Abort()
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": err.Error(),
-		})
+		helper.HandleError(ctx, err)
 	}
 
-	messageIDStr := ctx.Param("messageID")
-	messageID64, err := strconv.ParseUint(messageIDStr, 10, 64)
+	messageID, err := helper.ParseUintParam(ctx, "messageID")
 	if err != nil {
-		ctx.Abort()
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": err.Error(),
-		})
-		return
+		helper.HandleError(ctx, err)
 	}
-	messageID := uint(messageID64)
 
-	listIDStr := ctx.Param("listID")
-	listID64, err := strconv.ParseUint(listIDStr, 10, 64)
+	listID, err := helper.ParseUintParam(ctx, "listID")
 	if err != nil {
-		ctx.Abort()
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": err.Error(),
-		})
-		return
+		helper.HandleError(ctx, err)
 	}
-	listID := uint(listID64)
 
 	toDoMessageDto, err := toDoMessageHandler.Service.UpdateToDoMessageByMessageID(messageID, listID, userID.(uint), toDoMessage)
 	if err != nil {
-		ctx.Abort()
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": err.Error(),
-		})
-		return
+		helper.HandleError(ctx, err)
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
