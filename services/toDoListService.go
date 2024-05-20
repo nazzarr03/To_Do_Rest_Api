@@ -13,6 +13,7 @@ type DefaultToDoListService struct {
 type ToDoListService interface {
 	GetTodoListsByUserID(userID uint) ([]models.ToDoList, error)
 	CreateToDoList(userID uint) (*dto.ToDoListDto, error)
+	DeleteToDoList(listID, userID uint) error
 }
 
 func (toDoListService *DefaultToDoListService) GetTodoListsByUserID(userID uint) ([]models.ToDoList, error) {
@@ -42,5 +43,13 @@ func (toDoListService *DefaultToDoListService) CreateToDoList(userID uint) (*dto
 	}
 
 	return &toDoListDto, nil
+}
 
+func (toDoListService *DefaultToDoListService) DeleteToDoList(listID, userID uint) error {
+	err := toDoListService.Repo.DeleteToDoList(listID, userID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
