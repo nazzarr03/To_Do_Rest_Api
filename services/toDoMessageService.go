@@ -1,6 +1,7 @@
 package services
 
 import (
+	"github.com/nazzarr03/To-Do-Rest-Api/dto"
 	"github.com/nazzarr03/To-Do-Rest-Api/models"
 	"github.com/nazzarr03/To-Do-Rest-Api/repository"
 )
@@ -11,6 +12,7 @@ type DefaultToDoMessageService struct {
 
 type ToDoMessageService interface {
 	GetToDoMessagesByListID(listID uint) ([]models.ToDoMessage, error)
+	CreateToDoMessageByListID(listID, userID uint, toDoMessage models.ToDoMessage) (*dto.ToDoMessageDto, error)
 }
 
 func (toDoMessageService *DefaultToDoMessageService) GetToDoMessagesByListID(listID uint) ([]models.ToDoMessage, error) {
@@ -20,4 +22,23 @@ func (toDoMessageService *DefaultToDoMessageService) GetToDoMessagesByListID(lis
 	}
 
 	return toDoMessages, nil
+}
+
+func (toDoMessageService *DefaultToDoMessageService) CreateToDoMessageByListID(listID, userID uint, toDoMessage models.ToDoMessage) (*dto.ToDoMessageDto, error) {
+	toDoMessage, err := toDoMessageService.Repo.CreateToDoMessageByListID(listID, userID, toDoMessage)
+	if err != nil {
+		return nil, err
+	}
+
+	toDoMessageDto := dto.ToDoMessageDto{
+		MessageID: toDoMessage.MessageID,
+		ListID:    toDoMessage.ListID,
+		UserID:    toDoMessage.UserID,
+		Content:   toDoMessage.Content,
+		IsDone:    toDoMessage.IsDone,
+		CreatedAt: toDoMessage.CreatedAt,
+		UpdatedAt: toDoMessage.UpdatedAt,
+	}
+
+	return &toDoMessageDto, nil
 }

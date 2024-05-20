@@ -42,3 +42,34 @@ func IsAuthorized(user models.User, list models.ToDoList) error {
 
 	return nil
 }
+
+func GetMaxMessageID() uint {
+	maxMessageID := uint(0)
+	for _, item := range config.ToDoMessages {
+		if item.MessageID > maxMessageID {
+			maxMessageID = item.MessageID
+		}
+	}
+	return maxMessageID + 1
+}
+
+func CalculateCompletionPercent(list models.ToDoList) uint {
+	doneCount := 0
+	deleteCount := 0
+	messageCount := len(list.ToDoMessages)
+
+	for _, toDoMessage := range list.ToDoMessages {
+		if toDoMessage.DeletedAt.IsZero() {
+			if toDoMessage.IsDone {
+				doneCount++
+			} else {
+				deleteCount++
+			}
+		}
+	}
+	if doneCount == 0 || messageCount-deleteCount == 0 {
+		return 0
+	}
+
+	return uint((uint(doneCount) / uint(messageCount-deleteCount)) * 100)
+}

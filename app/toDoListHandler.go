@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/nazzarr03/To-Do-Rest-Api/helper"
 	"github.com/nazzarr03/To-Do-Rest-Api/services"
 )
 
@@ -13,14 +14,7 @@ type ToDoListHandler struct {
 }
 
 func (toDoListHandler *ToDoListHandler) GetTodoListsByUserID(ctx *gin.Context) {
-	userID, exists := ctx.Get("userID")
-
-	if !exists {
-		ctx.JSON(http.StatusUnauthorized, gin.H{
-			"message": "user not authorized",
-		})
-		return
-	}
+	userID := helper.GetUserID(ctx)
 
 	toDoListsDto, err := toDoListHandler.Service.GetTodoListsByUserID(userID.(uint))
 	if err != nil {
@@ -36,14 +30,7 @@ func (toDoListHandler *ToDoListHandler) GetTodoListsByUserID(ctx *gin.Context) {
 }
 
 func (toDoListHandler *ToDoListHandler) CreateToDoList(ctx *gin.Context) {
-	userID, exists := ctx.Get("userID")
-
-	if !exists {
-		ctx.JSON(http.StatusUnauthorized, gin.H{
-			"message": "user not authorized",
-		})
-		return
-	}
+	userID := helper.GetUserID(ctx)
 
 	toDoListDto, err := toDoListHandler.Service.CreateToDoList(userID.(uint))
 	if err != nil {
@@ -60,14 +47,7 @@ func (toDoListHandler *ToDoListHandler) CreateToDoList(ctx *gin.Context) {
 }
 
 func (toDoListHandler *ToDoListHandler) DeleteToDoList(ctx *gin.Context) {
-	userID, exists := ctx.Get("userID")
-
-	if !exists {
-		ctx.JSON(http.StatusUnauthorized, gin.H{
-			"message": "user not authorized",
-		})
-		return
-	}
+	userID := helper.GetUserID(ctx)
 
 	listIDStr := ctx.Param("listID")
 	listID64, err := strconv.ParseUint(listIDStr, 10, 64)
