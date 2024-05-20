@@ -14,6 +14,7 @@ type ToDoMessageService interface {
 	GetToDoMessagesByListID(listID uint) ([]models.ToDoMessage, error)
 	CreateToDoMessageByListID(listID, userID uint, toDoMessage models.ToDoMessage) (*dto.ToDoMessageDto, error)
 	DeleteToDoMessageByMessageID(messageID, listID, userID uint) error
+	UpdateToDoMessageByMessageID(messageID, listID, userID uint, toDoMessage models.ToDoMessage) (*dto.ToDoMessageDto, error)
 }
 
 func (toDoMessageService *DefaultToDoMessageService) GetToDoMessagesByListID(listID uint) ([]models.ToDoMessage, error) {
@@ -51,4 +52,23 @@ func (toDoMessageService *DefaultToDoMessageService) DeleteToDoMessageByMessageI
 	}
 
 	return nil
+}
+
+func (toDoMessageService *DefaultToDoMessageService) UpdateToDoMessageByMessageID(messageID, listID, userID uint, toDoMessage models.ToDoMessage) (*dto.ToDoMessageDto, error) {
+	toDoMessage, err := toDoMessageService.Repo.UpdateToDoMessageByMessageID(messageID, listID, userID, toDoMessage)
+	if err != nil {
+		return nil, err
+	}
+
+	toDoMessageDto := dto.ToDoMessageDto{
+		MessageID: toDoMessage.MessageID,
+		ListID:    toDoMessage.ListID,
+		UserID:    toDoMessage.UserID,
+		Content:   toDoMessage.Content,
+		IsDone:    toDoMessage.IsDone,
+		CreatedAt: toDoMessage.CreatedAt,
+		UpdatedAt: toDoMessage.UpdatedAt,
+	}
+
+	return &toDoMessageDto, nil
 }

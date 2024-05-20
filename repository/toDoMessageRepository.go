@@ -14,6 +14,7 @@ type ToDoMessageRepository interface {
 	GetToDoMessagesByListID(listID uint) ([]models.ToDoMessage, error)
 	CreateToDoMessageByListID(listID, userID uint, toDoMessage models.ToDoMessage) (models.ToDoMessage, error)
 	DeleteToDoMessageByMessageID(messageID, listID, userID uint) error
+	UpdateToDoMessageByMessageID(messageID, listID, userID uint, toDoMessage models.ToDoMessage) (models.ToDoMessage, error)
 }
 
 func (toDoMessageMockRepo *ToDoMessageMockRepository) GetToDoMessagesByListID(listID uint) ([]models.ToDoMessage, error) {
@@ -94,4 +95,45 @@ func (toDoMessageMockRepo *ToDoMessageMockRepository) DeleteToDoMessageByMessage
 	toDoList.CompletionPercent = helper.CalculateCompletionPercent(*toDoList)
 
 	return nil
+}
+
+func (toDoMessageMockRepo *ToDoMessageMockRepository) UpdateToDoMessageByMessageID(messageID, listID, userID uint, toDoMessage models.ToDoMessage) (models.ToDoMessage, error) {
+	var toDoList *models.ToDoList
+	var message *models.ToDoMessage
+	var user *models.User
+
+	toDoList, err := helper.FindListByID(listID)
+	if err != nil {
+		return models.ToDoMessage{}, err
+	}
+
+	message, err = helper.FindMessageByID(messageID)
+	if err != nil {
+		return models.ToDoMessage{}, err
+	}
+
+	user, err = helper.FindUserByID(userID)
+	if err != nil {
+		return models.ToDoMessage{}, err
+	}
+
+	err = helper.IsAuthorized(*user, *toDoList)
+	if err != nil {
+		return models.ToDoMessage{}, err
+	}
+
+	message.Content = toDoMessage.Content
+	message.IsDone = toDoMessage.IsDone
+	message.UpdatedAt = time.Now()
+
+	for i, m := range toDoList.ToDoMessages {
+		if m.MessageID == messageID {
+			toDoList.ToDoMessages[i] = *message
+			break
+		}
+	}
+
+	toDoList.CompletionPercent = helper.CalculateCompletionPercent(*toDoList)
+
+	return *message, nil
 }
