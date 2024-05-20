@@ -33,3 +33,27 @@ func (toDoListHandler *ToDoListHandler) GetTodoListsByUserID(ctx *gin.Context) {
 		"data": toDoListsDto,
 	})
 }
+
+func (toDoListHandler *ToDoListHandler) CreateToDoList(ctx *gin.Context) {
+	userID, exists := ctx.Get("userID")
+
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"message": "user not authorized",
+		})
+		return
+	}
+
+	toDoListDto, err := toDoListHandler.Service.CreateToDoList(userID.(uint))
+	if err != nil {
+		ctx.Abort()
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+		})
+	}
+
+	ctx.JSON(http.StatusCreated, gin.H{
+		"message": "To-Do list created successfully",
+		"data":    toDoListDto,
+	})
+}
