@@ -1,7 +1,6 @@
 package services
 
 import (
-	"github.com/nazzarr03/To-Do-Rest-Api/models"
 	"github.com/nazzarr03/To-Do-Rest-Api/repository"
 )
 
@@ -10,11 +9,11 @@ type DefaultUserService struct {
 }
 
 type UserService interface {
-	Login(user models.User) (string, error)
+	Login(username, password string) (string, error)
 }
 
-func (u *DefaultUserService) Login(user models.User) (string, error) {
-	token, err := u.Repo.Login(user)
+func (userService *DefaultUserService) Login(username, password string) (string, error) {
+	token, err := userService.Repo.Login(username, password)
 	if err != nil {
 		return "", err
 	}

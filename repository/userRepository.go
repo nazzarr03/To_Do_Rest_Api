@@ -3,38 +3,20 @@ package repository
 import (
 	"errors"
 
-	"github.com/nazzarr03/To-Do-Rest-Api/models"
+	"github.com/nazzarr03/To-Do-Rest-Api/config"
 	"github.com/nazzarr03/To-Do-Rest-Api/utils"
 )
 
-type UserArray struct {
-	users []models.User
-}
+type UserMockRepository struct{}
 
 type UserRepository interface {
-	Login(user models.User) (string, error)
+	Login(username, password string) (string, error)
 }
 
-func AddUser() {
-	userArray := UserArray{}
-
-	userArray.users = append(userArray.users, models.User{
-		UserID:   1,
-		Username: "username1",
-		Password: "password1",
-		UserType: "default",
-	}, models.User{
-		UserID:   2,
-		Username: "username2",
-		Password: "password2",
-		UserType: "admin",
-	})
-}
-
-func (userArray *UserArray) Login(user models.User) (string, error) {
-	for _, u := range userArray.users {
-		if u.Username == user.Username && u.Password == user.Password {
-			token, err := utils.GenerateToken(u.UserID)
+func (userMockRepo *UserMockRepository) Login(username, password string) (string, error) {
+	for _, user := range config.Users {
+		if user.Username == username && user.Password == password {
+			token, err := utils.GenerateToken(user.UserID)
 			if err != nil {
 				return "", err
 			}
